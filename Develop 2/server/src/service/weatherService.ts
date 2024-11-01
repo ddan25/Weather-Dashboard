@@ -100,9 +100,24 @@ class WeatherService {
     return this.parseCurrentWeather(data);
   }
   // TODO: Build parseCurrentWeather method
-  private parseCurrentWeather(response: any) {}
+  private parseCurrentWeather(response: any) {
+    const { main, weather, wind } = response;
+    return new Weather(
+      main.temp,
+      weather[0].description,
+      main.humidity,
+      wind.speed
+    );
+  }
   // TODO: Complete buildForecastArray method
-  private buildForecastArray(currentWeather: Weather, weatherData: any[]) {}
+  private buildForecastArray(currentWeather: Weather, weatherData: any[]) {
+    return weatherData.map(data => new Weather(
+      data.main.temp,
+      data.weather[0].description,
+      data.main.humidity,
+      data.wind.speed
+    ));
+  }
   // TODO: Complete getWeatherForCity method
   async getWeatherForCity(city: string) {}
 }
