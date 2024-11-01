@@ -119,7 +119,13 @@ class WeatherService {
     ));
   }
   // TODO: Complete getWeatherForCity method
-  async getWeatherForCity(city: string) {}
+  async getWeatherForCity(city: string) {
+    const coordinates = await this.fetchAndDestructureLocationData(city);
+    const currentWeather = await this.fetchWeatherData(coordinates);
+    const weatherData = await this.fetchForecastData(coordinates);
+    const forecastArray = this.buildForecastArray(currentWeather, weatherData);
+    return { currentWeather, forecastArray };
+  }
 }
 
 export default new WeatherService();
