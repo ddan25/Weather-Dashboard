@@ -2,8 +2,42 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // TODO: Define an interface for the Coordinates object
+interface Coordinates {
+  lat: number;
+  lon: number;
+}
+
+// TODO: Define a class for the Location object
+class Location {
+  cityName: string;
+  coordinates: Coordinates;
+
+  constructor(cityName: string, coordinates: Coordinates) {
+    this.cityName = cityName;
+    this.coordinates = coordinates;
+  }
+}
 
 // TODO: Define a class for the Weather object
+class Weather {
+  temperature: number;
+  description: string;
+  humidity: number;
+  windSpeed: number;
+
+  constructor(
+    temperature: number,
+    description: string,
+    humidity: number,
+    windSpeed: number
+  ) {
+    this.temperature = temperature;
+    this.description = description;
+    this.humidity = humidity;
+    this.windSpeed = windSpeed;
+  }
+}
+
 
 // TODO: Complete the WeatherService class
 class WeatherService {
@@ -20,9 +54,14 @@ class WeatherService {
   // TODO: Create fetchLocationData method
   private async fetchLocationData(query: string) {
     const requestUrl = 'https://api.openweathermap.org'
-
     const response = await fetch(requestUrl);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
     const data = await response.json();
+    const coordinates = this.destructureLocationData(data);
+    return new Location(query, coordinates);
   }
   // TODO: Create destructureLocationData method
   private destructureLocationData(locationData: Coordinates): Coordinates {
@@ -30,10 +69,10 @@ class WeatherService {
     return {lat, lon};
   }
   // TODO: Create buildGeocodeQuery method
-  private buildGeocodeQuery(): string {
+  private buildGeocodeQuery(query: string): string {
     const params = new URLSearchParams({
-      city: this.city,
-      key: this.key
+      q: query,
+      appid: this.apiKey
   });
   return `${this.baseURL}?${params.toString()}`;
   }
@@ -45,17 +84,27 @@ class WeatherService {
   // make sure sure your recheck after you set your routes
 
   // TODO: Create fetchAndDestructureLocationData method
-  private async fetchAndDestructureLocationData() {
-    
+  private async fetchAndDestructureLocationData(query: string) {
+    const locationData = await this.fetchLocationData(query);
+    return locationData.coordinates;
   }
   // TODO: Create fetchWeatherData method
-  // private async fetchWeatherData(coordinates: Coordinates) {}
+  private async fetchWeatherData(coordinates: Coordinates) {
+    const requestUrl = this.buildWeatherQuery(coordinates);
+    const response = await fetch(requestUrl);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return this.parseCurrentWeather(data);
+  }
   // TODO: Build parseCurrentWeather method
-  // private parseCurrentWeather(response: any) {}
+  private parseCurrentWeather(response: any) {}
   // TODO: Complete buildForecastArray method
-  // private buildForecastArray(currentWeather: Weather, weatherData: any[]) {}
+  private buildForecastArray(currentWeather: Weather, weatherData: any[]) {}
   // TODO: Complete getWeatherForCity method
-  // async getWeatherForCity(city: string) {}
+  async getWeatherForCity(city: string) {}
 }
 
 export default new WeatherService();
