@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+
 // TODO: Define a City class with name and id properties
 class City {
   name: string;
@@ -34,9 +37,19 @@ class HistoryService {
     return this.read();
   }
   // TODO Define an addCity method that adds a city to the searchHistory.json file
-  async addCity(city: string) {}
+  async addCity(city: string) {
+    const cities = this.read();
+    const cityId = new Date().getTime().toString();
+    const newCity = new City(cityName, cityId);
+    cities.push(newCity);
+    this.write(cities);
+  }
   // * BONUS TODO: Define a removeCity method that removes a city from the searchHistory.json file
-  async removeCity(id: string) {}
+  async removeCity(id: string) {
+    const cities = this.read();
+    const updatedCities = cities.filter(city => city.id!== id);
+    this.write(updatedCities);
+  }
 }
 
 export default new HistoryService();
