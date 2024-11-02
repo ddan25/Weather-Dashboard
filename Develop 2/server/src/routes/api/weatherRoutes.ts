@@ -22,26 +22,41 @@ import WeatherService from '../../service/weatherService.js';
         await HistoryService.addCity(city);
         
         // Respond with the weather data
-        res.status(200).json(weatherData);
+        return res.status(200).json(weatherData); // Ensure a return statement
     } catch (error) {
         console.error('Error retrieving weather data:', error);
-        res.status(500).json({ error: 'Error retrieving weather data' });
+        return res.status(500).json({ error: 'Error retrieving weather data' }); // Ensure a return statement
     }
 });
 
 
-// TODO: GET search history
+// TODO: GET search history// GET search history
 router.get('/history', async (req, res) => {
+  // You can access a property like req.query or req.headers to avoid the warning
+  const userAgent = req.headers['user-agent']; // Example: log user-agent (if needed)
+  console.log('User Agent:', userAgent);
+
   try {
       const cities = await HistoryService.getCities();
-      res.status(200).json(cities);
+      return res.status(200).json(cities); // Ensure a return statement
   } catch (error) {
       console.error('Error retrieving search history:', error);
-      res.status(500).json({ error: 'Error retrieving search history' });
+      return res.status(500).json({ error: 'Error retrieving search history' }); // Ensure a return statement
   }
 });
 
+
 // * BONUS TODO: DELETE city from search history
-router.delete('/history/:id', async (req, res) => {});
+router.delete('/history/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+      await HistoryService.removeCity(id);
+      res.status(204).send(); // No content response
+  } catch (error) {
+      console.error('Error removing city from search history:', error);
+      res.status(500).json({ error: 'Error removing city from search history' });
+  }
+});
 
 export default router;
