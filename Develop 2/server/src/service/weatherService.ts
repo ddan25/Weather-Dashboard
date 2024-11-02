@@ -74,7 +74,7 @@ class WeatherService {
       q: query,
       appid: this.apiKey
   });
-  return `${this.baseURL}?${params.toString()}`;
+  return `${this.baseURL}/weather?${params.toString()}`;
   }
   // TODO: Create buildWeatherQuery method
   private buildWeatherQuery(coordinates: Coordinates): string {
@@ -109,6 +109,16 @@ class WeatherService {
       wind.speed
     );
   }
+  // ????
+  private async fetchForecastData(coordinates: Coordinates): Promise<any[]> {
+    const requestUrl = `${this.baseURL}/forecast?lat=${coordinates.lat}&lon=${coordinates.lon}&appid=${this.apiKey}`;
+    const response = await fetch(requestUrl);
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data.list; // Assuming the forecast data is in the 'list' property
+}
   // TODO: Complete buildForecastArray method
   private buildForecastArray(currentWeather: Weather, weatherData: any[]) {
     return weatherData.map(data => new Weather(
