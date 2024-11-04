@@ -5,9 +5,8 @@ import HistoryService from '../../service/historyService.js';
 import WeatherService from '../../service/weatherService.js';
 
 // TODO: POST Request with city name to retrieve weather data
-  // TODO: GET weather data from city name
-  // TODO: save city to search history
-  router.post('/weather', async (req: Request, res: Response) => {
+
+  router.post('/', async (req: Request, res: Response) => {
     try {
       // Extract the city name from the request body
       const cityName = req.body.city; // Assuming city name is sent in the request body
@@ -35,6 +34,59 @@ import WeatherService from '../../service/weatherService.js';
       return res.status(500).json({ error: 'An error occurred while retrieving weather data' });
     }
   });
+    // TODO: GET weather data from city name
+    // GET weather data from city name
+router.get('/weather/:id', async (req: Request, res: Response) => {
+  try {
+    // Extract the city name from the URL parameters
+    const cityName = req.params.city; // e.g., /weather/London
+
+    if (!cityName) {
+      return res.status(400).json({ error: 'City name is required' });
+    }
+
+    // Fetch weather data for the city
+    const weatherData = await WeatherService.getWeatherForCity(cityName);
+
+    // Send the weather data as a JSON response
+    return res.json(weatherData); // Ensure to return here
+  } catch (err) {
+    // Log any errors that occur during the process
+    console.error(err);
+
+    // Respond with a 500 status code and the error message in JSON format
+    return res.status(500).json({ error: 'An error occurred while retrieving weather data' });
+  }
+});
+
+  // TODO: save city to search history
+
+// POST Request to save city to search history
+router.post('/history', async (req: Request, res: Response) => {
+  try {
+    // Extract the city name from the request body
+    const cityName = req.body.city; // Assuming city name is sent in the request body
+
+    if (!cityName) {
+      return res.status(400).json({ error: 'City name is required' });
+    }
+
+    // Sanitize the city name
+    const sanitizedCityName = cityName.charAt(0).toUpperCase() + cityName.slice(1).toLowerCase();
+
+    // Add the sanitized city name to the search history
+    await HistoryService.addCity(sanitizedCityName);
+
+    // Respond with a success message
+    return res.json({ success: 'City successfully added to search history' });
+  } catch (err) {
+    // Log any errors that occur during the process
+    console.error(err);
+
+    // Respond with a 500 status code and the error message in JSON format
+    return res.status(500).json({ error: 'An error occurred while saving the city to history' });
+  }
+});
 
 // TODO: GET search history
 router.get('/history', async (_req: Request, res: Response) => {

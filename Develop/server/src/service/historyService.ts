@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+// import { v4 as uuidv4 } from 'uuid';
 
 class City {
     name: string;
@@ -62,26 +62,24 @@ class HistoryService {
           return parsedCities;
         });
       }
-
       async addCity(city: string) {
         if (!city) {
-          throw new Error('city cannot be blank');
+            throw new Error('city cannot be blank');
         }
     
-        // Add a unique id to the state using uuid package
-        const newCity: City = { name: city, id: uuidv4() };
+        const newCity: City = { name: city, id: Date.now().toString() }; // Use timestamp for ID
     
-        // Get all cities, add the new city, write all the updated cities, return the newCity
         return await this.getCities()
-          .then((cities) => {
-            if (cities.find((index) => index.name === city)) {
-              return cities;
-            }
-            return [...cities, newCity];
-          })
-          .then((updatedCities) => this.write(updatedCities))
-          .then(() => newCity);
-      }
+            .then((cities) => {
+                if (cities.find((index) => index.name === city)) {
+                    return cities;
+                }
+                return [...cities, newCity];
+            })
+            .then((updatedCities) => this.write(updatedCities))
+            .then(() => newCity);
+    }
+    
 
       async removeCity(id: string) {
         return await this.getCities()
