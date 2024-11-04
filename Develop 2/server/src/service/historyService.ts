@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 class City {
     name: string;
@@ -34,23 +35,46 @@ class HistoryService {
         fs.writeFileSync(this.filePath, JSON.stringify(cities, null, 2), 'utf-8');
     }
 
-    async getCities(): Promise<City[]> {
-        return this.read();
-    }
+    async getCities() {
+        return await this.read().then((cities) => {
+          let parsedCities: City[];
+    
+          // If states isn't an array or can't be turned into one, send back a new empty array
+          try {
+            parsedCities = cities.map((city) => ({ ...city }));
+          } catch (err) {
+            parsedCities = [];
+          }
+    
+          return parsedCities;
+        });
+      }
 
-    async addCity(cityName: string): Promise<void> {
-        const cities = await this.read();
-        const cityId = new Date().getTime().toString();
-        const newCity = new City(cityName, cityId);
-        cities.push(newCity);
-        await this.write(cities);
-    }
+      async addCity(city: string) {
+        if (!city) {
+          throw new Error('city cannot be blank');
+        }
+    
+        // Add a unique id to the state using uuid package
+        const newCity: City = { name: city, id: uuidv4() };
+    
+        // Get all cities, add the new city, write all the updated cities, return the newCity
+        return await this.getCities()
+          .then((cities) => {
+            if (cities.find((index) => index.name === city)) {
+              return cities;
+            }
+            return [...cities, newCity];
+          })
+          .then((updatedCities) => this.write(updatedCities))
+          .then(() => newCity);
+      }
 
-    async removeCity(id: string): Promise<void> {
-        const cities = await this.read();
-        const updatedCities = cities.filter(city => city.id !== id);
-        await this.write(updatedCities);
+      async removeCity(id: string) {
+        return await this.getCities()
+          .then((cities) => cities.filter((city) => city.id !== id))
+          .then((filteredCities) => this.write(filteredCities));
+      }
     }
-}
 
 export default new HistoryService();
