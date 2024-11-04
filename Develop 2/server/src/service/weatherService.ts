@@ -53,11 +53,17 @@ class WeatherService {
     private async fetchLocationData(query: string): Promise<Location> {
         const requestUrl = this.buildGeocodeQuery(query);
         const response = await fetch(requestUrl);
-
+    
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
+        
+        // Check if data is not empty
+        if (!data || data.length === 0) {
+            throw new Error('Location not found');
+        }
+    
         const coordinates = this.destructureLocationData(data[0].coord);
         return new Location(query, coordinates);
     }
@@ -104,9 +110,12 @@ class WeatherService {
     // Build parseCurrentWeather method
     private parseCurrentWeather(response: any): Weather {
         const { main, weather, wind } = response;
+    
+        const description = weather.length > 0 ? weather[0].description : 'No description available';
+        
         return new Weather(
             main.temp,
-            weather[0].description,
+            description,
             main.humidity,
             wind.speed
         );
@@ -116,11 +125,14 @@ class WeatherService {
     private async fetchForecastData(coordinates: Coordinates): Promise<any[]> {
         const requestUrl = `${this.baseURL}/forecast?lat=${coordinates.lat}&lon=${coordinates.lon}&appid=${this.apiKey}`;
         const response = await fetch(requestUrl);
+    
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        return data.list; // Assuming the forecast data is in the 'list' property
+        
+        // Check if 'list' exists and is an array
+        return Array.isArray(data.list) ? data.list : [];
     }
 
 // Complete buildForecastArray method

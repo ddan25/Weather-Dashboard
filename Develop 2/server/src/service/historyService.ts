@@ -19,6 +19,19 @@ class HistoryService {
         const __filename = new URL(import.meta.url).pathname; // Get the current file path
         const __dirname = path.dirname(__filename); // Derive the directory name
         this.filePath = path.join(__dirname, '..', 'searchHistory.json');
+        this.initialize(); // Ensure the file is initialized
+    }
+
+    private initialize() {
+        const dirPath = path.dirname(this.filePath); // Get the directory path
+        // Check if the directory exists; if not, create it
+        if (!fs.existsSync(dirPath)) {
+            fs.mkdirSync(dirPath, { recursive: true }); // Create the directory and any necessary parent directories
+        }
+        // Check if the file exists; if not, create it with an empty array
+        if (!fs.existsSync(this.filePath)) {
+            fs.writeFileSync(this.filePath, JSON.stringify([]), 'utf-8');
+        }
     }
 
     private async read(): Promise<City[]> {
