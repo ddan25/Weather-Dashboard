@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Request, type Response } from 'express';
 const router = Router();
 
 import HistoryService from '../../service/historyService.js';
@@ -7,55 +7,72 @@ import WeatherService from '../../service/weatherService.js';
 // TODO: POST Request with city name to retrieve weather data
   // TODO: GET weather data from city name
   // TODO: save city to search history
-  router.post('/', async (req, res) => {
-    const { city } = req.body; // Assuming city name is sent in the request body
-
-    if (!city) {
-        return res.status(400).json({ error: 'City name is required' });
-    }
-
+  router.post('/', async (req: Request, res: Response) => {
     try {
-        // Get weather data from city name
-        const weatherData = await WeatherService.getWeatherForCity(city);
-        
-        // Save city to search history
-        await HistoryService.addCity(city);
-        
-        // Respond with the weather data
-        return res.status(200).json(weatherData); // Ensure a return statement
-    } catch (error) {
-        console.error('Error retrieving weather data:', error);
-        return res.status(500).json({ error: 'Error retrieving weather data' }); // Ensure a return statement
+      // Extract the city name from the request body, not params
+      const cityName = req.body.city; // Assuming city name is sent in the request body
+  
+      if (!cityName) {
+        return res.status(400).json({ error: 'City name is required' });
+      }
+  
+      // Fetch weather data for the city
+      const weatherData = await WeatherService.getWeatherForCity(cityName);
+      
+      // Sanitize the city name
+      const sanitizedCityName = cityName.charAt(0).toUpperCase() + cityName.slice(1).toLowerCase();
+      
+      // Add the sanitized city name to the search history
+      await HistoryService.addCity(sanitizedCityName);
+      
+      // Send the weather data as a JSON response
+      res.json(weatherData);
+    } catch (err) {
+      // Log any errors that occur during the process
+      console.error(err);
+      
+      // Respond with a 500 status code and the error message in JSON format
+      res.status(500).json({ error: 'An error occurred while retrieving weather data' });
     }
-});
+  });
 
-
-// TODO: GET search history// GET search history
-router.get('/history', async (req, res) => {
-  // You can access a property like req.query or req.headers to avoid the warning
-  const userAgent = req.headers['user-agent']; // Example: log user-agent (if needed)
-  console.log('User Agent:', userAgent);
-
+// TODO: GET search history
+router.get('/history', async (_req: Request, res: Response) => {
   try {
-      const cities = await HistoryService.getCities();
-      return res.status(200).json(cities); // Ensure a return statement
-  } catch (error) {
-      console.error('Error retrieving search history:', error);
-      return res.status(500).json({ error: 'Error retrieving search history' }); // Ensure a return statement
+    // Call the getStates method of HistoryService to retrieve saved states
+    const savedStates = await HistoryService.getCities();
+    
+    // Send the retrieved states as a JSON response
+    res.json(savedStates);
+  } catch (err) {
+    // Log any errors that occur during the process
+    console.log(err);
+    
+    // Respond with a 500 status code and the error message in JSON format
+    res.status(500).json(err);
   }
 });
 
-
 // * BONUS TODO: DELETE city from search history
-router.delete('/history/:id', async (req, res) => {
-  const { id } = req.params;
-
+router.delete('/history/:id', async (req: Request, res: Response) => {
   try {
-      await HistoryService.removeCity(id);
-      res.status(204).send(); // No content response
-  } catch (error) {
-      console.error('Error removing city from search history:', error);
-      res.status(500).json({ error: 'Error removing city from search history' });
+    // Check if the ID parameter is provided
+    if (!req.params.id) {
+      // If not, respond with a 400 status code and an error message
+      return res.status(400).json({ msg: 'State id is required' });
+    }
+
+    // Call the removeState method of historyService to remove the specified state
+    await HistoryService.removeCity(req.params.id);
+    
+    // Respond with a success message
+    res.json({ success: 'State successfully removed from search history' });
+  } catch (err) {
+    // Log any errors that occur during the process
+    console.log(err);
+    
+    // Respond with a 500 status code and the error message in JSON format
+    res.status(500).json(err);
   }
 });
 
