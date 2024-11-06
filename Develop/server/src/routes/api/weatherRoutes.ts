@@ -7,9 +7,9 @@ import WeatherService from '../../service/weatherService.js';
 // TODO: POST Request with city name to retrieve weather data
 
   router.post('/', async (req: Request, res: Response) => {
-    try {
+    // try {
       // Extract the city name from the request body
-      const cityName = req.body.city; // Assuming city name is sent in the request body
+      const cityName = req.body.cityName; // Assuming city name is sent in the request body
   
       if (!cityName) {
         return res.status(400).json({ error: 'City name is required' });
@@ -26,13 +26,13 @@ import WeatherService from '../../service/weatherService.js';
       
       // Send the weather data as a JSON response
       return res.json(weatherData); // Ensure to return here
-    } catch (err) {
-      // Log any errors that occur during the process
-      console.error(err);
+    // } catch (err) {
+    //   // Log any errors that occur during the process
+    //   console.error(err);
 
-            // Respond with a 500 status code and the error message in JSON format
-      return res.status(500).json({ error: 'An error occurred while retrieving weather data' });
-    }
+    //         // Respond with a 500 status code and the error message in JSON format
+    //   return res.status(500).json({ error: 'An error occurred while retrieving weather data' });
+    // }
   });
     // TODO: GET weather data from city name
     // GET weather data from city name
